@@ -88,7 +88,10 @@ def on_search(message, history):
     if not message or not message.strip():
         return history, ""
     answer = respond(message, history)
-    history = history + [(message, answer)]
+    history = history + [
+        {"role": "user", "content": message},
+        {"role": "assistant", "content": answer},
+    ]
     return history, ""
 
 
