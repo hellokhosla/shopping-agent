@@ -27,7 +27,9 @@ def format_rows(rows) -> str:
         compare = row.get("compare_at_price")
         if compare and compare > row["price"]:
             price += f" ~~${compare:.2f}~~"
-        lines.append(f"**[{row['title']}]({row['product_url']})** — {price}")
+        image = row.get("image_url")
+        thumbnail = f"![{row['title']}]({image})\n" if isinstance(image, str) and image else ""
+        lines.append(f"{thumbnail}**[{row['title']}]({row['product_url']})** — {price}")
     return "\n\n".join(lines)
 
 
