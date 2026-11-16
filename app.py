@@ -70,6 +70,9 @@ CALPAK_CSS = """
     border-radius: 999px !important; border: 1px solid #6B1A2B !important;
     padding: 6px 16px !important; font-size: 13px !important;
 }
+#results, #results .bubble-wrap, #results > div {
+    overflow-y: visible !important; max-height: none !important;
+}
 """
 
 NAV_LEFT_HTML = """
@@ -113,9 +116,11 @@ with gr.Blocks(title="CALPAK — Shopping Assistant") as demo:
     )
 
     chatbot = gr.Chatbot(
+        elem_id="results",
         label=None,
         show_label=False,
-        height=320,
+        height="auto",
+        resizable=False,
         placeholder="Try *\"best carry-on under $150\"* or *\"a gift for my dad\"* in the search box above.",
     )
 
