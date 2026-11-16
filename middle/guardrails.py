@@ -1,7 +1,8 @@
-"""Hard limits enforced in code, never only in the prompt.
+"""OWNER: Kapil, Kavya — Middle (model selection, guardrails, intent routing).
 
-The model's extracted fields (max_price, etc.) are suggestions from language,
-not trusted bounds — code clamps them before they ever touch a catalog query.
+Hard limits enforced in code, never only in the prompt. The model's extracted
+fields (max_price, etc.) are suggestions from language, not trusted bounds —
+code clamps them before they ever touch a catalog query.
 """
 
 MAX_RESULTS = 6

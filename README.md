@@ -1,20 +1,25 @@
 # Team 12 — Retail Shopping Agent
 
-Maven "Building Agentic AI Applications" capstone. V0 (Workflow) build of the "Middle" layer — model selection, guardrails, intent routing (Kapil + Kavya) — wired to the real Calpak catalog.
+Maven "Building Agentic AI Applications" capstone. V0 (Workflow) build, wired to the real Calpak catalog.
+
+## Code ownership
+
+Three independent folders, matching the team's own role split — see [`OWNERS.md`](OWNERS.md) for the full breakdown and why it's structured this way. Only `app.py` imports across folders.
+
+| Folder | Owners | Area |
+|---|---|---|
+| `middle/` | Kapil, Kavya | Model selection, guardrails, intent routing |
+| `backend/` | Gaurav, Prasad | Catalog ingestion / data |
+| `frontend/` | Jasmeet, Carly | UI, theming, result display |
+| `evals/` | Everyone | Component-level evals (not started yet) |
 
 ## Architecture (V0 — Workflow)
 
 Code is the center of control. The model is called once per message, only to classify intent and extract constraints:
 
 ```
-user message -> classify() [the only model call] -> dispatch table -> catalog search (code) -> formatted answer (code)
+user message -> middle.classify() [the only model call] -> middle.DISPATCH -> backend.load_catalog() (code) -> frontend.format_rows() (code)
 ```
-
-- `middle/classify.py` — `ShoppingIntent` schema + the one structured-output call per message.
-- `middle/guardrails.py` — hard limits (price ceiling, result count) enforced in code, independent of what the model extracted.
-- `middle/dispatch.py` — one plain function per objective (`cross_category`, `single_category`, `specific_product`, `branded`), all reading the same catalog DataFrame.
-- `catalog.py` — loads the real Calpak product catalog via pandas.
-- `app.py` — Gradio chat UI wiring it all together.
 
 V1 (Agentic) will flip this: the model becomes the center of control, calling tools (catalog search, maybe order history) in a loop until it's satisfied, instead of one classify-then-dispatch pass.
 

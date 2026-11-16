@@ -1,5 +1,6 @@
-"""Intent classification — the only place the model runs in V0 (workflow).
+"""OWNER: Kapil, Kavya — Middle (model selection, guardrails, intent routing).
 
+Intent classification — the only place the model runs in V0 (workflow).
 Everything downstream of this reads intent.objective and dispatches to plain
 code; the model never touches the catalog or decides how results are shaped.
 """

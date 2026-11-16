@@ -1,4 +1,6 @@
-"""Dispatch table: the classification label picks which plain function shapes
+"""OWNER: Kapil, Kavya — Middle (model selection, guardrails, intent routing).
+
+Dispatch table: the classification label picks which plain function shapes
 the catalog results. No model involved past classify.py — every function here
 is deterministic filtering over the same DataFrame.
 """
