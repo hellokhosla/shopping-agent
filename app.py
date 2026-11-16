@@ -60,16 +60,20 @@ CALPAK_THEME = gr.themes.Soft(
 
 CALPAK_CSS = """
 .gradio-container { max-width: 900px !important; margin: auto; }
-#nav-bar { display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 2px solid #6B1A2B; padding-bottom: 10px; margin-bottom: 6px; }
-#wordmark { letter-spacing: 0.15em; font-weight: 700; font-size: 26px; color: #6B1A2B; white-space: nowrap; }
-#nav-links { display: flex; gap: 18px; font-size: 14px; color: #3a2a1e; white-space: nowrap; }
+#nav-row { align-items: center; border-bottom: 2px solid #6B1A2B; padding-bottom: 10px; margin-bottom: 10px; }
+#nav-left { display: flex; align-items: center; gap: 26px; height: 100%; }
+#wordmark { letter-spacing: 0.15em; font-weight: 700; font-size: 24px; color: #6B1A2B; white-space: nowrap; }
+#nav-links { display: flex; gap: 16px; font-size: 13px; color: #3a2a1e; white-space: nowrap; }
 #nav-links span { cursor: default; }
-#search-box textarea, #search-box input { border-radius: 999px !important; border: 1px solid #6B1A2B !important; }
+#search-box { min-width: 160px; }
+#search-box textarea, #search-box input {
+    border-radius: 999px !important; border: 1px solid #6B1A2B !important;
+    padding: 6px 16px !important; font-size: 13px !important;
+}
 """
 
-NAV_HTML = """
-<div id="nav-bar">
+NAV_LEFT_HTML = """
+<div id="nav-left">
   <div id="wordmark">CALPAK</div>
   <div id="nav-links">
     <span>Shop All</span><span>Best Sellers</span><span>Bags</span>
@@ -89,23 +93,28 @@ def on_search(message, history):
 
 
 with gr.Blocks(title="CALPAK — Shopping Assistant") as demo:
-    gr.HTML(NAV_HTML)
-    with gr.Row():
-        gr.Markdown(
-            "Team 12 Retail Shopping Agent — Middle layer (model selection, guardrails, "
-            "intent routing), V0 Workflow. The model classifies intent once per message; "
-            "code does everything else — search, price limits, formatting.",
-        )
-    chatbot = gr.Chatbot(label=None, show_label=False, height=480)
-    with gr.Row():
+    with gr.Row(elem_id="nav-row"):
+        gr.HTML(NAV_LEFT_HTML, elem_id="nav-left-wrap")
         search_box = gr.Textbox(
             elem_id="search-box",
-            placeholder="Search or ask anything — e.g. 'best carry-on under $150'",
+            placeholder="Search",
             show_label=False,
-            scale=5,
             container=False,
+            scale=1,
         )
-        search_button = gr.Button("Search", variant="primary", scale=1)
+
+    gr.Markdown(
+        "Team 12 Retail Shopping Agent — Middle layer (model selection, guardrails, "
+        "intent routing), V0 Workflow. The model classifies intent once per message; "
+        "code does everything else — search, price limits, formatting.",
+    )
+
+    chatbot = gr.Chatbot(
+        label=None,
+        show_label=False,
+        height=320,
+        placeholder="Try *\"best carry-on under $150\"* or *\"a gift for my dad\"* in the search box above.",
+    )
 
     gr.Examples(
         examples=[
@@ -118,7 +127,6 @@ with gr.Blocks(title="CALPAK — Shopping Assistant") as demo:
     )
 
     search_box.submit(on_search, inputs=[search_box, chatbot], outputs=[chatbot, search_box])
-    search_button.click(on_search, inputs=[search_box, chatbot], outputs=[chatbot, search_box])
 
 if __name__ == "__main__":
     demo.launch(theme=CALPAK_THEME, css=CALPAK_CSS)
