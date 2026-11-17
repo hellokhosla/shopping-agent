@@ -4,13 +4,10 @@ from __future__ import annotations
 
 import argparse
 import os
-from pathlib import Path
 
 import psycopg
 
-from .database_config import load_nonempty_dotenv
-
-REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+from .database_config import load_database_environment
 
 
 def _positive_limit(value: str) -> int:
@@ -28,11 +25,10 @@ def main() -> int:
     parser.add_argument("--limit", type=_positive_limit, default=5)
     args = parser.parse_args()
 
-    load_nonempty_dotenv(REPOSITORY_ROOT / ".env.local")
-    load_nonempty_dotenv(REPOSITORY_ROOT / ".env")
+    load_database_environment()
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        parser.error("DATABASE_URL is not set; add it to the repository-root .env or .env.local file.")
+        parser.error("DATABASE_URL is not set; configure it in backend/.env.local or the process environment.")
 
     with psycopg.connect(database_url, connect_timeout=10) as connection:
         connection.read_only = True

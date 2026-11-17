@@ -17,9 +17,8 @@ from .configuration import RetailerConfig, load_retailer
 from .models import Product
 
 from .catalog import build_products
-from .database_config import load_nonempty_dotenv
+from .database_config import load_database_environment
 
-CAPSTONE_ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
 RETAILER_CONFIG_DIR = Path(__file__).resolve().parent / "config" / "retailers"
 
@@ -890,8 +889,6 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     import os
 
-    from dotenv import find_dotenv
-
     parser = argparse.ArgumentParser(
         description="Synthesize the configured demo catalog data and load both retailers into PostgreSQL."
     )
@@ -925,17 +922,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    app_env = CAPSTONE_ROOT / ".env.local"
-    if app_env.is_file():
-        load_nonempty_dotenv(app_env)
-    fallback_env = find_dotenv(usecwd=True)
-    if fallback_env:
-        load_nonempty_dotenv(fallback_env)
+    load_database_environment()
     database_url = os.environ.get("DATABASE_URL_UNPOOLED") or os.environ.get("DATABASE_URL")
     if not database_url:
         raise RuntimeError(
-            "Neon DATABASE_URL_UNPOOLED or DATABASE_URL is not set. Run `neon init` or configure "
-            "the connection URL in a local .env file; do not commit or paste it into chat."
+            "DATABASE_URL_UNPOOLED or DATABASE_URL is not set. Configure the connection URL in "
+            "backend/.env.local or the process environment; do not commit or paste it into chat."
         )
     if not database_url.startswith(("postgres://", "postgresql://")):
         raise ValueError("DATABASE_URL must be a PostgreSQL connection URL.")

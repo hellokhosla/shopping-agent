@@ -36,8 +36,8 @@ Checks connectivity to the existing shared Neon database and prints catalog coun
 Uses read-only transactions and a local `DATABASE_URL`; no AI, schema changes, or data loading is involved.
 
 **`backend/database_config.py`**  
-Loads nonempty environment-file values for the client and loader without overriding process settings.  
-An empty `DATABASE_URL` in a local environment file does not mask credentials in the ignored `.env`.
+Loads nonempty values from `backend/.env.local` for the client and loader without overriding process settings.  
+Resolves the file relative to the backend code, not the current directory; project-root environment files are not read.
 
 **`backend/colors.py`**  
 Converts Nordstrom's numeric color codes and CALPAK's named variant colors into shared color families and shades.  
@@ -123,11 +123,11 @@ python -m pip install -r backend\requirements.txt
 The backend is self-contained: `configuration.py`, `models.py`, and `category_rules.py` supply validated
 configuration, product records, and category eligibility rules. No shopping-agent package or LLM is required.
 
-`neon init` creates a local `.env.local` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`; the loader prefers the
-unpooled URL for bulk loading. A workspace `.env` or process-level `DATABASE_URL` is also supported. These local
-credentials must never be committed. Use `backend/.env.example` as a reference and keep real URLs in the
-ignored project-root `.env` file or process environment. From the
-project root, preview the enriched row counts or load both retailers:
+Configure `DATABASE_URL` and optionally `DATABASE_URL_UNPOOLED` in `backend/.env.local`; the loader prefers the
+unpooled URL for bulk loading. Both the client and loader read only this backend-local file, regardless of the
+working directory, with existing process environment values taking precedence. They do not read project-root
+`.env` or `.env.local` files. If `neon init` creates an environment file in the project root, move the settings
+into `backend/.env.local`. From the project root, preview the enriched row counts or load both retailers:
 
 ```powershell
 python -m backend.database_loader --dry-run
@@ -148,9 +148,11 @@ dimensions/airline limits, generate reviews, or create embeddings; those tables/
 
 ## Testing the shared Neon database
 
-Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in the ignored
-project-root `.env` file, using `backend/.env.example` as a template, or set it in the process environment.
-No project-root environment file is included in this backend-only PR. Never commit a real connection URL.
+Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in
+`backend/.env.local` or set it in the process environment. The committed backend-local template includes both
+database URL keys with empty values plus the Neon branch metadata. Never commit a real connection URL.
+This template is tracked: `.gitignore` does not protect subsequent edits to an already tracked file.
+Before committing, confirm both URL values remain blank in the staged version.
 The client uses the existing database directly; do not run the loader just to test connectivity.
 
 ```powershell
@@ -159,7 +161,7 @@ python -m backend.database_test_client --retailer nordstrom --limit 5
 ```
 
 The client prints database-wide catalog counts followed by up to 50 variants for the requested retailer.
-It prefers an existing process-level `DATABASE_URL`, then `.env.local`, then `.env`. Use a read-only database
+It prefers an existing process-level `DATABASE_URL`, then `backend/.env.local`. Use a read-only database
 role when sharing access; a retailer query filter is not a database permission boundary.
 
 ## Data-layer tests and viewer
@@ -171,4 +173,4 @@ python -m backend.viewer
 ```
 
 The viewer reads and enriches the local CSVs, not Neon. Both source CSVs and the CALPAK JSON snapshot are included.
-Generated caches and local credentials are excluded from version control.
+Generated caches are excluded from version control; the committed environment template contains no credentials.
