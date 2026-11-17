@@ -5,9 +5,9 @@ formatting of catalog rows, and the gr.Blocks page layout. Takes a
 search_handler callback from app.py instead of importing Middle/Backend
 directly, so this file never has to know how a query actually gets answered.
 
-Layout: the page is a stand-in storefront; the assistant is a floating panel
+Layout: the page is a demo storefront (markup in storefront.py); the assistant is a floating panel
 pinned bottom-left (see the "popup chat" block in theme.py), opened by the
-launcher button or by submitting the nav search box.
+launcher button or by submitting the nav search box or the banner prompt box.
 """
 
 from __future__ import annotations
@@ -17,7 +17,8 @@ import re
 
 import gradio as gr
 
-from .theme import CALPAK_CSS, CALPAK_THEME, NAV_LEFT_HTML
+from .storefront import FOOTER_HTML, HERO_ART_HTML, HERO_COPY_HTML, NAV_LEFT_HTML, PRODUCTS_HTML, RIBBON_HTML
+from .theme import CALPAK_CSS, CALPAK_THEME
 
 EXAMPLES = [
     "Find a gift for my dad, something travel related",
@@ -297,22 +298,36 @@ def build_demo(search_handler) -> gr.Blocks:
     def close_panel():
         return gr.update(visible=False), gr.update(visible=True)
 
-    with gr.Blocks(title="CALPAK — Shopping Assistant") as demo:
+    with gr.Blocks(title="CALPAK demo — Shopping Assistant") as demo:
+        gr.HTML(RIBBON_HTML)
+
         with gr.Row(elem_id="nav-row"):
             gr.HTML(NAV_LEFT_HTML, elem_id="nav-left-wrap")
+            # Plain "Search" for shoppers; submitting it still opens the assistant
+            # with the search text, since the assistant is the only search here.
             search_box = gr.Textbox(
                 elem_id="search-box",
                 placeholder="Search",
                 show_label=False,
                 container=False,
-                scale=1,
+                scale=0,
             )
 
-        gr.Markdown(
-            "Team 12 Retail Shopping Agent — Middle layer (model selection, guardrails, "
-            "intent routing), V0 Workflow. The model classifies intent once per message; "
-            "code does everything else — search, price limits, formatting.",
-        )
+        with gr.Row(elem_id="hero", equal_height=True):
+            with gr.Column(elem_id="hero-copy"):
+                gr.HTML(HERO_COPY_HTML)
+                hero_box = gr.Textbox(
+                    elem_id="hero-ask",
+                    placeholder="e.g. A carry-on for a week in Japan under $250",
+                    label="Ask the shopping assistant",
+                    show_label=False,
+                    container=False,
+                    submit_btn=True,
+                )
+            gr.HTML(HERO_ART_HTML, elem_id="hero-art")
+
+        gr.HTML(PRODUCTS_HTML)
+        gr.HTML(FOOTER_HTML)
 
         launcher = gr.Button("Ask the shopping assistant", elem_id="chat-launcher", variant="primary")
 
@@ -349,7 +364,7 @@ def build_demo(search_handler) -> gr.Blocks:
         # show_progress="hidden" removes Gradio's "processing" status overlay. The
         # shopper's own message appears straight away instead, as the sign that
         # the request was received.
-        for box in (search_box, reply_box):
+        for box in (search_box, hero_box, reply_box):
             box.submit(
                 add_question,
                 inputs=[box, chatbot],
