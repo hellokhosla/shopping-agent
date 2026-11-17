@@ -41,14 +41,14 @@ no additional agent implementation or model calls are needed by the backend.
 
 ## Checking Neon database connectivity
 
-`backend/neon_client.py` is a read-only sample client. It checks the connection, prints database row counts, and
+`backend/database_test_client.py` is a read-only sample client. It checks the connection, prints database row counts, and
 queries a few product variants without changing data:
 
 ```bash
 cp .env.example .env
 # Set DATABASE_URL in .env to the shared Neon PostgreSQL connection string.
 pip install -r requirements.txt
-python -m backend.neon_client --retailer calpak --limit 5
+python -m backend.database_test_client --retailer calpak --limit 5
 ```
 
 Use the connection string from the Neon Console and keep it in your local `.env` or `.env.local` file.

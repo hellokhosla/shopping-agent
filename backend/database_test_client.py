@@ -1,4 +1,4 @@
-"""Read a few catalog rows from the shared Neon PostgreSQL database."""
+"""Test database connectivity and read a few shared PostgreSQL catalog rows."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def _positive_limit(value: str) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Check Neon connectivity and print a few catalog variants."
+        description="Check database connectivity and print a few catalog variants."
     )
     parser.add_argument("--retailer", default="calpak", choices=("calpak", "nordstrom"))
     parser.add_argument("--limit", type=_positive_limit, default=5)

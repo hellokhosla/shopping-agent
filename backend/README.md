@@ -19,7 +19,7 @@ Maps each row into the common product model, adds color and size/availability da
 Preserves the GitHub app's no-argument `backend.catalog.load_catalog()` DataFrame interface.  
 Reads the same local CALPAK CSV, filters available variants, and deduplicates parent products without changing the app.
 
-**`backend/neon_client.py`**  
+**`backend/database_test_client.py`**  
 Checks connectivity to the existing shared Neon database and prints catalog counts and a few product variants.  
 Uses read-only transactions and a local `DATABASE_URL`; no AI, schema changes, or data loading is involved.
 
@@ -137,8 +137,8 @@ Ask the database owner for the connection URL through a secure channel. Put `DAT
 The client uses the existing database directly; do not run the loader just to test connectivity.
 
 ```powershell
-python -m backend.neon_client --retailer calpak --limit 5
-python -m backend.neon_client --retailer nordstrom --limit 5
+python -m backend.database_test_client --retailer calpak --limit 5
+python -m backend.database_test_client --retailer nordstrom --limit 5
 ```
 
 The client prints database-wide catalog counts followed by up to 50 variants for the requested retailer.
