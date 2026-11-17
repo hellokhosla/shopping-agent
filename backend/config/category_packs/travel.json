@@ -1,0 +1,6 @@
+{
+  "size_systems": {
+    "luggage": ["mini carry-on", "carry-on/cabin", "medium check-in", "large check-in"],
+    "one_size": ["ONE SIZE"]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "retailer_id": "nordstrom",
+  "display_name": "Nordstrom",
+  "category_pack": "apparel",
+  "brand_voice": "Warm, polished and concise, like a helpful personal stylist. No hype, no emojis.",
+  "llm": {"model": "gpt-4.1-mini", "temperature": 0},
+  "catalog": {
+    "path": "..\\..\\data\\nordstrom product data.csv",
+    "field_mapping": {
+      "sku": "SKU",
+      "name": "PRODUCT_NAME",
+      "brand": "BRAND",
+      "price": "PRICE_CURRENT",
+      "was_price": "PRICE_RETAIL",
+      "rating": "REVIEW_RATING",
+      "review_count": "REVIEW_COUNT",
+      "promotion": "PROMOTION",
+      "color_code": "COLOR",
+      "category": "CATEGORY",
+      "tag": "SUBCATEGORY"
+    },
+    "drop_categories": ["New Arrivals"],
+    "drop_skus_with_tags": ["Fine Jewelry"],
+    "max_valid_price": 10000,
+    "color_lookup": "nordstrom_color_codes",
+    "size_system_by_category": {"Clothing": "apparel", "Maternity": "apparel", "Shoes": "shoes"},
+    "stock_seed": 42,
+    "in_stock_rate": 0.8
+  },
+  "category_tags": {
+    "dress": ["Dresses"],
+    "blazer": ["Blazers, Suits & Separates", "Coats & Jackets", "Jackets & Coats"],
+    "jacket": ["Coats & Jackets", "Jackets & Coats"],
+    "rain jacket": ["Coats & Jackets", "Jackets & Coats", "Activewear"],
+    "fleece": ["Coats & Jackets", "Jackets & Coats", "Sweatshirts & Hoodies", "Activewear", "Sweaters"],
+    "top": ["Tops", "Bodysuits"],
+    "sweater": ["Sweaters"],
+    "pants": ["Pants & Leggings", "Leggings & Pants", "Blazers, Suits & Separates"],
+    "cargo pants": ["Pants & Leggings", "Leggings & Pants", "Activewear"],
+    "jeans": ["Jeans & Denim", "Jeans"],
+    "skirt": ["Skirts"],
+    "jumpsuit": ["Jumpsuits & Rompers"],
+    "heels": ["Heels", "Dress Shoes"],
+    "flats": ["Flats", "Oxfords & Loafers"],
+    "sandals": ["Sandals", "Espadrilles", "Mules & Slides"],
+    "sneakers": ["Sneakers & Athletic", "Running Shoes"],
+    "boots": ["Boots", "Booties", "Snow & Winter"],
+    "hiking boots": ["Boots", "Booties", "Snow & Winter", "Sneakers & Athletic"],
+    "clutch": ["Clutches & Pouches", "Handbags & Wallets", "Designer Bags"],
+    "handbag": ["Handbags & Wallets", "Designer Bags", "Shoulder Bags", "Crossbody Bags", "Tote Bags", "Satchels", "Hobo Bags", "Bucket Bags"],
+    "earrings": ["Earrings"],
+    "necklace": ["Necklaces"]
+  },
+  "merchandising": {
+    "boosts": [
+      {"brand": "Nordstrom", "strength": 2},
+      {"brand": "Halogen", "strength": 1}
+    ]
+  },
+  "guardrails": {
+    "help_page_url": "https://www.nordstrom.com/browse/customer-service",
+    "catalog_scope": "Nordstrom's online catalog of women's clothing, shoes, handbags, jewelry and accessories.",
+    "competitors": ["amazon", "macy's", "macys", "bloomingdale's", "bloomingdales", "saks", "neiman marcus", "target", "walmart", "zara", "h&m", "shein", "revolve", "asos"],
+    "out_of_catalog_terms": [
+      "men's", "mens", "for men", "for my husband", "my husband", "boyfriend", "for him", "for my son", "kids", "children's", "boys",
+      "tent", "tents", "sleeping bag", "camping stove", "backpacking stove", "cooler", "lantern", "furniture", "electronics", "laptop"
+    ]
+  }
+}

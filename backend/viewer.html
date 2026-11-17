@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retail Catalog Viewer</title>
+  <style>
+    :root { color-scheme: light; font-family: "Segoe UI", Arial, sans-serif; color: #202b38; background: #f4f6f8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #17283e; color: #fff; padding: 22px max(24px, calc((100% - 1380px) / 2)); }
+    header h1 { margin: 0 0 6px; font-size: 23px; }
+    header p { margin: 0; color: #d3deeb; font-size: 14px; }
+    main { max-width: 1380px; margin: 22px auto; padding: 0 24px; }
+    .filters { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 12px; background: #fff; padding: 16px; border: 1px solid #dfe5eb; border-radius: 10px; }
+    label { display: grid; gap: 5px; font-size: 12px; font-weight: 600; color: #435267; }
+    input, select, button { min-height: 38px; border: 1px solid #cbd4df; border-radius: 6px; padding: 7px 9px; background: #fff; color: #202b38; font: inherit; }
+    button { cursor: pointer; font-weight: 600; }
+    button:hover { background: #edf3fa; }
+    .filter-actions { display: flex; align-items: end; gap: 8px; }
+    .filter-actions button:first-child { background: #1b5b91; border-color: #1b5b91; color: #fff; }
+    .summary { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 16px 0 12px; color: #4b5c70; font-size: 14px; }
+    .summary strong { color: #17283e; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 14px; }
+    .card { display: flex; flex-direction: column; min-height: 220px; padding: 15px; background: #fff; border: 1px solid #dfe5eb; border-radius: 9px; }
+    .card h2 { margin: 0 0 6px; font-size: 16px; line-height: 1.35; }
+    .brand { color: #637287; font-size: 13px; }
+    .price { margin: 12px 0 8px; font-size: 18px; font-weight: 700; }
+    .was { margin-left: 6px; color: #7a8796; font-size: 13px; font-weight: 400; text-decoration: line-through; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 3px 0; }
+    .pill { padding: 4px 7px; border-radius: 999px; background: #edf2f7; color: #435267; font-size: 11px; }
+    .pill.available { background: #e3f5ea; color: #23643d; }
+    .pill.unavailable { background: #fce9e7; color: #8d352b; }
+    .description { margin: 9px 0 0; color: #526174; font-size: 12px; line-height: 1.45; }
+    .sku { margin-top: auto; padding-top: 12px; color: #77869a; font: 11px Consolas, monospace; }
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0 32px; }
+    .empty { padding: 40px; text-align: center; color: #637287; background: #fff; border: 1px dashed #cbd4df; border-radius: 9px; }
+    .error { color: #a33228; }
+    @media (max-width: 800px) { .filters { grid-template-columns: repeat(2, minmax(140px, 1fr)); } }
+    @media (max-width: 480px) { main { padding: 0 12px; } .filters { grid-template-columns: 1fr; } .summary { align-items: flex-start; flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">Retail Catalog Viewer</h1>
+    <p>Read-only view of normalized catalog data. No AI, LLM, or shopping workflow is used.</p>
+  </header>
+  <main>
+    <form class="filters" id="filters">
+      <label>Search products
+        <input name="q" type="search" placeholder="Name, SKU, description or tag">
+      </label>
+      <label>Product category
+        <select name="category"><option value="">All categories</option></select>
+      </label>
+      <label>Brand contains
+        <input name="brand" type="search" placeholder="Brand name">
+      </label>
+      <label>Color family
+        <select name="color"><option value="">All colors</option></select>
+      </label>
+      <label>Minimum price
+        <input name="min_price" type="number" min="0" step="0.01" placeholder="No minimum">
+      </label>
+      <label>Maximum price
+        <input name="max_price" type="number" min="0" step="0.01" placeholder="No maximum">
+      </label>
+      <label>Available size
+        <select name="size"><option value="">Any size</option></select>
+      </label>
+      <label>Availability
+        <select name="availability">
+          <option value="">All products</option>
+          <option value="in_stock">In stock</option>
+          <option value="out_of_stock">Out of stock</option>
+        </select>
+      </label>
+      <label>Sort by
+        <select name="sort">
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
+          <option value="name">Name</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button type="submit">Apply filters</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+    <div class="summary">
+      <div id="status" role="status">Loading catalog...</div>
+      <div id="source-note"></div>
+    </div>
+    <section id="results" class="grid" aria-live="polite"></section>
+    <nav class="pagination" aria-label="Catalog pages">
+      <button id="previous" type="button">Previous</button>
+      <span id="page-label">Page 1</span>
+      <button id="next" type="button">Next</button>
+    </nav>
+  </main>
+  <script>
+    const form = document.querySelector("#filters");
+    const results = document.querySelector("#results");
+    const status = document.querySelector("#status");
+    const sourceNote = document.querySelector("#source-note");
+    const pageLabel = document.querySelector("#page-label");
+    let page = 1;
+    let pageSize = 36;
+    let total = 0;
+    let timer;
+    let requestId = 0;
+
+    function addOptions(select, values) {
+      for (const value of values) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.append(option);
+      }
+    }
+
+    function paramsForPage() {
+      const params = new URLSearchParams(new FormData(form));
+      params.set("page", String(page));
+      params.set("page_size", String(pageSize));
+      for (const [key, value] of [...params.entries()]) {
+        if (!value) params.delete(key);
+      }
+      return params;
+    }
+
+    function addPill(card, label, style) {
+      const pill = document.createElement("span");
+      pill.className = `pill ${style || ""}`;
+      pill.textContent = label;
+      card.append(pill);
+    }
+
+    function renderProduct(product) {
+      const card = document.createElement("article");
+      card.className = "card";
+      const title = document.createElement("h2");
+      title.textContent = product.name || "(Unnamed product)";
+      card.append(title);
+      const brand = document.createElement("div");
+      brand.className = "brand";
+      brand.textContent = product.brand || "Brand not provided";
+      card.append(brand);
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(product.price);
+      if (product.was_price) {
+        const was = document.createElement("span");
+        was.className = "was";
+        was.textContent = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(product.was_price);
+        price.append(was);
+      }
+      card.append(price);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      addPill(meta, product.category);
+      addPill(meta, `${product.color_shade} (${product.color_family})`);
+      addPill(meta, product.in_stock ? "In stock" : "Out of stock", product.in_stock ? "available" : "unavailable");
+      for (const size of product.sizes_in_stock) addPill(meta, `Size: ${size}`);
+      card.append(meta);
+      if (product.description) {
+        const description = document.createElement("p");
+        description.className = "description";
+        description.textContent = product.description;
+        card.append(description);
+      }
+      const sku = document.createElement("div");
+      sku.className = "sku";
+      sku.textContent = `SKU ${product.sku}${product.stock_is_synthetic ? " · synthetic stock" : ""}`;
+      card.append(sku);
+      return card;
+    }
+
+    async function loadProducts() {
+      const currentRequest = ++requestId;
+      status.classList.remove("error");
+      status.textContent = "Loading products...";
+      try {
+        const response = await fetch(`/api/products?${paramsForPage()}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Request failed (${response.status})`);
+        if (currentRequest !== requestId) return;
+        total = payload.total;
+        results.replaceChildren();
+        for (const product of payload.products) results.append(renderProduct(product));
+        if (!payload.products.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "No products match these filters.";
+          results.append(empty);
+        }
+        const first = total ? (page - 1) * pageSize + 1 : 0;
+        const last = Math.min(page * pageSize, total);
+        status.textContent = `Showing ${first}-${last} of ${total.toLocaleString()} products`;
+        pageLabel.textContent = `Page ${page} of ${Math.max(1, Math.ceil(total / pageSize))}`;
+        document.querySelector("#previous").disabled = page <= 1;
+        document.querySelector("#next").disabled = page * pageSize >= total;
+      } catch (error) {
+        if (currentRequest !== requestId) return;
+        results.replaceChildren();
+        status.classList.add("error");
+        status.textContent = error.message;
+      }
+    }
+
+    async function initialize() {
+      try {
+        const response = await fetch("/api/options");
+        const options = await response.json();
+        if (!response.ok) throw new Error(options.error || "Could not load catalog filters.");
+        document.querySelector("#title").textContent = `${options.retailer} Catalog`;
+        addOptions(form.elements.category, options.categories);
+        addOptions(form.elements.color, options.color_families);
+        addOptions(form.elements.size, options.sizes);
+        sourceNote.textContent = options.synthetic_stock
+          ? "Some availability and sizes are synthetic demo data."
+          : "Availability reflects the source catalog; unit quantities are not provided.";
+        await loadProducts();
+      } catch (error) {
+        status.classList.add("error");
+        status.textContent = error.message;
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      page = 1;
+      loadProducts();
+    });
+    form.addEventListener("reset", () => {
+      setTimeout(() => { page = 1; loadProducts(); }, 0);
+    });
+    form.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { page = 1; loadProducts(); }, 300);
+    });
+    form.addEventListener("change", () => { page = 1; loadProducts(); });
+    document.querySelector("#previous").addEventListener("click", () => {
+      if (page > 1) { page--; loadProducts(); }
+    });
+    document.querySelector("#next").addEventListener("click", () => {
+      if (page * pageSize < total) { page++; loadProducts(); }
+    });
+    initialize();
+  </script>
+</body>
+</html>
