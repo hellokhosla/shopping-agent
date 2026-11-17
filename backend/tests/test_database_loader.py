@@ -9,7 +9,7 @@ from backend.database_loader import (
     _product_url,
     _size_norm,
 )
-from retail_agent.config import load_retailer
+from backend.configuration import load_retailer
 
 
 class DatabaseLoaderMappingTests(unittest.TestCase):

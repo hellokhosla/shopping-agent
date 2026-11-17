@@ -17,9 +17,9 @@ from typing import Iterable, overload
 import pandas as pd
 
 from .colors import COLOR_LOOKUPS
-from retail_agent.config import DataEnrichmentConfig, RetailerConfig
-from retail_agent.matching_engine import CategoryRule
-from retail_agent.models import ONE_SIZE, Product
+from .configuration import DataEnrichmentConfig, RetailerConfig
+from .category_rules import CategoryRule
+from .models import ONE_SIZE, Product
 
 CACHE_DIR = Path(__file__).resolve().parent / ".cache"
 

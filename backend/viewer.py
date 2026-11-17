@@ -11,8 +11,8 @@ from typing import Iterable
 from urllib.parse import parse_qs, urlparse
 
 from .catalog import Catalog, load_catalog
-from retail_agent.config import load_retailer
-from retail_agent.models import Product
+from .configuration import load_retailer
+from .models import Product
 
 VIEWER_HTML = Path(__file__).with_name("viewer.html")
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "config" / "retailers" / "nordstrom.json"

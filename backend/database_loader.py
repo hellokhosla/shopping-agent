@@ -13,8 +13,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import pandas as pd
 
-from retail_agent.config import RetailerConfig, load_retailer
-from retail_agent.models import Product
+from .configuration import RetailerConfig, load_retailer
+from .models import Product
 
 from .catalog import build_products
 from .database_config import load_nonempty_dotenv

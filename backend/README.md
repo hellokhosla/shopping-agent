@@ -7,6 +7,18 @@ pipeline.
 
 ### Core files
 
+**`backend/configuration.py`**  
+Validates retailer JSON files, field mappings, and category-pack size vocabularies.  
+Provides configuration loading without importing shopping-agent modules.
+
+**`backend/models.py`**  
+Defines the normalized `Product` record and shared one-size value.  
+Keeps catalog data types independent of intent parsing and recommendation logic.
+
+**`backend/category_rules.py`**  
+Defines deterministic tag and title/description rules for category eligibility.  
+Allows catalog consumers to use category filtering without importing the agent's matching engine.
+
 **`backend/__init__.py`**  
 Marks `backend` as a Python package.  
 Allows imports such as `backend.catalog` and `python -m backend.viewer`.
@@ -108,9 +120,8 @@ root (the folder containing `backend`), install the data-layer dependencies:
 python -m pip install -r backend\requirements.txt
 ```
 
-The backend also requires the shared `retail_agent/__init__.py`, `config.py`, `models.py`, and `matching_engine.py`
-modules included in the repository. These supply validated configuration, product types, and category rules;
-they do not call an LLM. No other shopping-agent modules are required by the backend.
+The backend is self-contained: `configuration.py`, `models.py`, and `category_rules.py` supply validated
+configuration, product records, and category eligibility rules. No shopping-agent package or LLM is required.
 
 `neon init` creates a local `.env.local` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`; the loader prefers the
 unpooled URL for bulk loading. A workspace `.env` or process-level `DATABASE_URL` is also supported. These local

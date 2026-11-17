@@ -1,8 +1,4 @@
-"""Three-layer configuration: platform code, category packs, retailer config.
-
-Retailers differ only through these files (PRD M1). Platform-locked rules
-(boost eligibility, near-miss tolerances, guardrails) live in code, not here.
-"""
+"""Validated retailer configuration and data-enrichment settings."""
 
 from __future__ import annotations
 

@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pandas as pd
 
 from backend.catalog import build_products, load_catalog
-from retail_agent.config import load_retailer
-from retail_agent.models import ONE_SIZE
+from backend.configuration import load_retailer
+from backend.models import ONE_SIZE
 
 BACKEND = Path(__file__).resolve().parents[1]
 NORDSTROM_CONFIG = BACKEND / "config" / "retailers" / "nordstrom.json"

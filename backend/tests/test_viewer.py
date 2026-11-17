@@ -8,8 +8,8 @@ from urllib.request import urlopen
 
 from backend.catalog import Catalog
 from backend.viewer import filter_products, make_handler
-from retail_agent.config import load_retailer
-from retail_agent.models import Product
+from backend.configuration import load_retailer
+from backend.models import Product
 
 BACKEND = Path(__file__).resolve().parents[1]
 CALPAK_CONFIG = BACKEND / "config" / "retailers" / "calpak.json"

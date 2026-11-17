@@ -36,8 +36,8 @@ python app.py
 The existing app keeps its CALPAK DataFrame interface through `backend.catalog.load_catalog()`.
 The complete data-layer backend, both retailer CSVs, CALPAK JSON snapshot, repeatable PostgreSQL loader,
 schema, viewer, and tests are included under `backend/`. See [backend setup and enrichment](backend/README.md).
-The shared configuration, product models, and category-rule dependencies are included under `retail_agent/`;
-no additional agent implementation or model calls are needed by the backend.
+The backend includes its own configuration, product models, and category rules;
+no separate shopping-agent package or model calls are needed.
 
 ## Checking Neon database connectivity
 
