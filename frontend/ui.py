@@ -187,24 +187,109 @@ def format_rows(rows, near_miss=None) -> str:
     near_miss is optional and not passed by app.py yet; see the PLACEHOLDERS note above.
     """
     if rows is None or len(rows) == 0:
-        return NO_RESULTS
+        return f'<div class="pc-empty">{html.escape(NO_RESULTS)}</div>'
     cards = "".join(_card(row) for _, row in rows.iterrows())
     return f'<div class="pc-results"><div class="pc-grid">{cards}</div>{_near_miss(near_miss)}</div>'
+
+
+# --------------------------------------------------------------------------
+# "MATCHED ON" TAGS
+#
+# app.py appends a plain debug line to every answer:
+#   <sub>_intent: single_category · category=bags · brand=None · max_price=100.0_</sub>
+# The frontend does not change app.py. Instead it reads that line out of the
+# answer text, removes it, and shows the same information as a row of tags
+# above the cards. If the line is missing or its format changes, the answer is
+# shown exactly as received.
+# --------------------------------------------------------------------------
+
+# Brand tag switch (display only).
+#
+# False for the Calpak demo: the catalog is a single brand, so a brand tag adds
+# nothing. Set to True for a multi-retailer demo (e.g. Nordstrom data) to show
+# a "Brand: ..." tag whenever the model extracts one. This only controls what is
+# displayed; whether a brand is used to filter results is decided in middle/.
+SHOW_BRAND_TAG = False
+
+# How each kind of request (middle's intent.objective) is described to the shopper.
+OBJECTIVE_LABELS = {
+    "cross_category": "Browsing across categories",
+    "single_category": "One category",
+    "specific_product": "A specific product",
+    "branded": "A brand's lineup",
+}
+
+_DEBUG_LINE = re.compile(
+    r"\s*<sub>_intent:\s*(?P<objective>.*?)\s*·\s*category=(?P<category>.*?)\s*·\s*"
+    r"brand=(?P<brand>.*?)\s*·\s*max_price=(?P<max_price>.*?)_</sub>\s*$",
+    re.DOTALL,
+)
+
+
+def _field(value) -> str:
+    """A debug-line value as text; Python's 'None' means the field was empty."""
+    value = (value or "").strip()
+    return "" if value == "None" else value
+
+
+def _money(amount: float) -> str:
+    return f"${amount:,.0f}" if amount.is_integer() else f"${amount:,.2f}"
+
+
+def _matched_on_tags(objective: str, category: str, brand: str, max_price: str) -> str:
+    """The "Matched on" row of tags. Empty fields get no tag."""
+    tags = []
+    if objective == "branded" and not SHOW_BRAND_TAG:
+        objective = ""  # single-brand demo: don't describe the request as a brand lineup
+    if objective in OBJECTIVE_LABELS:
+        tags.append(OBJECTIVE_LABELS[objective])
+    if category:
+        tags.append(category[:1].upper() + category[1:])
+    if brand and SHOW_BRAND_TAG:
+        tags.append(f"Brand: {brand}")
+    if max_price:
+        try:
+            tags.append(f"Up to {_money(float(max_price))}")
+        except ValueError:
+            pass
+    if not tags:
+        return ""
+    chips = "".join(f'<span class="pc-chip">{html.escape(tag)}</span>' for tag in tags)
+    return f'<div class="pc-matched"><span class="pc-matched-label">Matched on</span>{chips}</div>'
+
+
+def restyle_answer(answer: str) -> str:
+    """Swap app.py's trailing debug line for a "Matched on" row of tags above the answer."""
+    if not isinstance(answer, str):
+        return answer
+    match = _DEBUG_LINE.search(answer)
+    if not match:
+        return answer
+    body = answer[: match.start()].strip()
+    tags = _matched_on_tags(
+        _field(match["objective"]), _field(match["category"]), _field(match["brand"]), _field(match["max_price"])
+    )
+    return f'<div class="pc-answer">{tags}{body}</div>'
 
 
 def build_demo(search_handler) -> gr.Blocks:
     """search_handler(message: str) -> str, the combined Middle+Backend answer."""
 
-    def on_search(message, history):
+    def add_question(message, history):
+        """Step 1, instant: show the shopper's message and open the panel."""
         history = history or []
         if not message or not message.strip():
-            return history, "", gr.update(), gr.update()
-        answer = search_handler(message)
-        history = history + [
-            {"role": "user", "content": message},
-            {"role": "assistant", "content": answer},
-        ]
-        return history, "", gr.update(visible=True), gr.update(visible=False)
+            return history, "", "", gr.update(), gr.update()
+        history = history + [{"role": "user", "content": message}]
+        return history, "", message, gr.update(visible=True), gr.update(visible=False)
+
+    def add_answer(pending, history):
+        """Step 2: run the search for the pending message and append the answer."""
+        history = history or []
+        if not pending:
+            return history, ""
+        answer = restyle_answer(search_handler(pending))
+        return history + [{"role": "assistant", "content": answer}], ""
 
     def open_panel():
         return gr.update(visible=True), gr.update(visible=False)
@@ -256,12 +341,22 @@ def build_demo(search_handler) -> gr.Blocks:
             gr.Examples(examples=EXAMPLES, inputs=reply_box, label="Try an example", elem_id="chat-examples")
             gr.HTML('<div id="chat-footnote">Course project demo. Not affiliated with CALPAK.</div>')
 
+        pending = gr.State("")  # the message waiting for its answer
+
         demo.load(None, None, None, js=FORCE_LIGHT_MODE_JS)
-        launcher.click(open_panel, outputs=[panel, launcher])
-        close.click(close_panel, outputs=[panel, launcher])
+        launcher.click(open_panel, outputs=[panel, launcher], show_progress="hidden")
+        close.click(close_panel, outputs=[panel, launcher], show_progress="hidden")
+        # show_progress="hidden" removes Gradio's "processing" status overlay. The
+        # shopper's own message appears straight away instead, as the sign that
+        # the request was received.
         for box in (search_box, reply_box):
             box.submit(
-                on_search, inputs=[box, chatbot], outputs=[chatbot, box, panel, launcher]
+                add_question,
+                inputs=[box, chatbot],
+                outputs=[chatbot, box, pending, panel, launcher],
+                show_progress="hidden",
+            ).then(
+                add_answer, inputs=[pending, chatbot], outputs=[chatbot, pending], show_progress="hidden"
             ).then(None, None, None, js=SCROLL_TO_LATEST_QUESTION_JS)
 
     return demo

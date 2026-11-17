@@ -98,8 +98,17 @@ CALPAK_CSS = """
     font-size: 12px; font-weight: 600; line-height: 1.3;
 }
 
+/* "Matched on" tags above the grid, and the no-results line. */
+.pc-matched { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pc-matched-label { font-size: 13px; color: #4A4740; }
+.pc-chip {
+    display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px;
+    border-radius: 999px; background: #F3F1EC; color: #1A1A1A; font-size: 13px; font-weight: 500;
+}
+.pc-empty { font-size: 15px; line-height: 1.5; color: #1A1A1A; }
+
 /* Near-miss strip under the grid. */
-.pc-results { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.pc-results, .pc-answer { display: flex; flex-direction: column; gap: 14px; width: 100%; }
 .pc-nearmiss {
     display: flex; align-items: center; gap: 12px; padding: 10px 14px;
     border: 1px dashed #8A8578; border-radius: 14px; font-size: 13px; line-height: 1.45; color: #1A1A1A;
