@@ -53,24 +53,25 @@ footer { display: none !important; }
     padding: 9px 18px !important; font-size: 15px !important; background: #FFFFFF !important;
 }
 
+/* Banner: dusty rose, a lighter maroon, so the maroon launcher pill stands out. */
 #hero {
-    margin-top: 16px; background: #5A1420; border-radius: 14px; overflow: hidden;
+    margin-top: 16px; background: #A8707A; border-radius: 14px; overflow: hidden;
     flex-wrap: wrap; gap: 0 !important; align-items: stretch;
 }
 #hero-copy { flex: 1 1 520px !important; padding: 56px 52px !important; gap: 0 !important; justify-content: center; }
-#hero-copy-text { display: flex; flex-direction: column; gap: 18px; color: #FFFDF6; }
-#hero-copy-text h1 { margin: 0; font-size: 54px; line-height: 1.05; font-weight: 500; color: #FFFDF6; }
-#hero-copy-text p { margin: 0; font-size: 19px; line-height: 1.5; max-width: 500px; color: #F3E3E5; }
+#hero-copy-text { display: flex; flex-direction: column; gap: 18px; color: #2A0A10; }
+#hero-copy-text h1 { margin: 0; font-size: 54px; line-height: 1.05; font-weight: 500; color: #2A0A10; }
+#hero-copy-text p { margin: 0; font-size: 19px; line-height: 1.5; max-width: 500px; color: #2A0A10; }
 .hero-tag {
     align-self: flex-start; display: inline-flex; align-items: center; height: 26px; padding: 0 12px;
-    border-radius: 13px; border: 1px solid #FFFDF6; font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
-    color: #FFFDF6; white-space: nowrap;
+    border-radius: 13px; border: 1px solid #2A0A10; font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    color: #2A0A10; white-space: nowrap;
 }
-#hero-ask-label { margin-top: 10px; font-size: 14px; font-weight: 500; color: #F3E3E5; }
+#hero-ask-label { margin-top: 10px; font-size: 14px; font-weight: 500; color: #2A0A10; }
 #hero-ask { max-width: 540px; margin-top: 8px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
 #hero-ask .input-container { display: flex; align-items: center; gap: 16px; }
 #hero-ask textarea, #hero-ask input {
-    border-radius: 999px !important; border: 0 !important; background: #FFFDF6 !important;
+    border-radius: 999px !important; border: 0 !important; background: #FFFFFF !important;
     padding: 16px 22px !important; font-size: 16px !important; color: #1A1A1A !important;
 }
 #hero-ask button {
@@ -78,14 +79,14 @@ footer { display: none !important; }
     border-radius: 999px !important; width: 52px !important; min-width: 52px !important; height: 52px !important;
 }
 #hero-art {
-    flex: 1 1 480px !important; min-height: 420px; background: #6E1B29;
+    flex: 1 1 480px !important; min-height: 420px; background: #B37E87;
     display: flex; align-items: flex-end; justify-content: center; padding: 40px 24px 0 24px;
 }
 #hero-art-inner { display: flex; align-items: flex-end; justify-content: center; width: 100%; }
 #hero-art-inner img { width: auto; object-fit: contain; mix-blend-mode: multiply; margin: 0; }
-.hero-art-left { height: 320px; margin-right: -40px !important; filter: brightness(1.05); }
-.hero-art-mid { height: 350px; filter: brightness(1.15); }
-.hero-art-right { height: 290px; margin-left: -40px !important; filter: brightness(1.15); }
+.hero-art-left { height: 320px; margin-right: -40px !important; }
+.hero-art-mid { height: 350px; }
+.hero-art-right { height: 290px; margin-left: -40px !important; }
 
 #sf-products { margin-top: 40px; }
 #sf-products-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; }
