@@ -37,7 +37,7 @@ Uses read-only transactions and a local `DATABASE_URL`; no AI, schema changes, o
 
 **`backend/database_config.py`**  
 Loads nonempty environment-file values for the client and loader without overriding process settings.  
-An empty `DATABASE_URL` in the checked-in `.env.local` template does not mask credentials in the ignored `.env`.
+An empty `DATABASE_URL` in a local environment file does not mask credentials in the ignored `.env`.
 
 **`backend/colors.py`**  
 Converts Nordstrom's numeric color codes and CALPAK's named variant colors into shared color families and shades.  
@@ -125,8 +125,8 @@ configuration, product records, and category eligibility rules. No shopping-agen
 
 `neon init` creates a local `.env.local` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`; the loader prefers the
 unpooled URL for bulk loading. A workspace `.env` or process-level `DATABASE_URL` is also supported. These local
-credentials must never be committed. The PR includes only a blank `.env.local` template; keep real URLs in the
-ignored `.env` file or process environment. From the
+credentials must never be committed. Use `backend/.env.example` as a reference and keep real URLs in the
+ignored project-root `.env` file or process environment. From the
 project root, preview the enriched row counts or load both retailers:
 
 ```powershell
@@ -150,7 +150,7 @@ dimensions/airline limits, generate reviews, or create embeddings; those tables/
 
 Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in the ignored
 project-root `.env` file, using `backend/.env.example` as a template, or set it in the process environment.
-The checked-in `.env.local` contains only `DATABASE_URL=`; leave that template empty. Never commit a real URL.
+No project-root environment file is included in this backend-only PR. Never commit a real connection URL.
 The client uses the existing database directly; do not run the loader just to test connectivity.
 
 ```powershell
