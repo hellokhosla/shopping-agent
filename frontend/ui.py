@@ -28,6 +28,18 @@ EXAMPLES = [
 
 NO_RESULTS = "I couldn't find anything matching that — want to loosen the price or category?"
 
+# The design is light-only. When the visitor's system is in dark mode, Gradio
+# adds a "dark" class to <body> and recolors its own components (chat area,
+# text boxes, buttons) while our custom CSS stays light, which makes text
+# unreadable. Remove the class on load and keep it removed.
+FORCE_LIGHT_MODE_JS = """
+() => {
+  const strip = () => document.body.classList.remove('dark');
+  strip();
+  new MutationObserver(strip).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+}
+"""
+
 # After an answer lands, put the shopper's latest question at the top of the
 # message area, so a tall grid of cards is read from its first row, not its last.
 SCROLL_TO_LATEST_QUESTION_JS = """
@@ -244,6 +256,7 @@ def build_demo(search_handler) -> gr.Blocks:
             gr.Examples(examples=EXAMPLES, inputs=reply_box, label="Try an example", elem_id="chat-examples")
             gr.HTML('<div id="chat-footnote">Course project demo. Not affiliated with CALPAK.</div>')
 
+        demo.load(None, None, None, js=FORCE_LIGHT_MODE_JS)
         launcher.click(open_panel, outputs=[panel, launcher])
         close.click(close_panel, outputs=[panel, launcher])
         for box in (search_box, reply_box):
