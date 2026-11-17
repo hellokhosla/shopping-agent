@@ -77,12 +77,42 @@ CALPAK_CSS = """
 .pc-was { font-size: 13px; color: #5E5A52; text-decoration: line-through; }
 .pc-why { font-size: 13px; line-height: 1.4; color: #3a2a1e; }
 .pc-why-label { font-weight: 600; color: #1A1A1A; }
-.pc-link {
-    margin-top: auto; align-self: flex-start; min-height: 40px; padding: 0 16px;
-    display: inline-flex; align-items: center; border: 1px solid #6B1A2B; border-radius: 999px;
-    font-size: 13px; font-weight: 600; color: #6B1A2B !important; text-decoration: none;
+.pc-tradeoff { font-size: 13px; line-height: 1.4; color: #3a2a1e; }
+.pc-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.pc-link, .pc-cart {
+    flex: 1 1 0; min-height: 40px; padding: 0 12px; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid #6B1A2B; border-radius: 999px;
+    font-family: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer;
 }
-.pc-link:hover { background: #6B1A2B; color: #FAF3E7 !important; }
+.pc-link { background: #FFFFFF; color: #6B1A2B !important; }
+.pc-link:hover { background: #F6EDEF; }
+.pc-cart { background: #6B1A2B; color: #FAF3E7; }
+.pc-cart:hover { background: #8A2238; }
+
+/* Badge sits over the top-left corner of the photo. */
+.pc-card { position: relative; }
+.pc-badge {
+    position: absolute; left: 10px; top: 10px; z-index: 1;
+    padding: 4px 10px; border-radius: 999px; background: #F2E76B; color: #1A1A1A;
+    font-size: 12px; font-weight: 600; line-height: 1.3;
+}
+
+/* Near-miss strip under the grid. */
+.pc-results { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.pc-nearmiss {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    border: 1px dashed #8A8578; border-radius: 14px; font-size: 13px; line-height: 1.45; color: #1A1A1A;
+}
+.pc-nearmiss-tag {
+    flex: 0 0 auto; padding: 4px 10px; border-radius: 999px;
+    background: #FFF1C9; border: 1px solid #8A6A00; color: #5C4A00; font-size: 12px; font-weight: 600;
+}
+
+/* Anything still waiting on the middle layer: dashed outline, muted, italic. */
+.pc-placeholder { font-style: italic; color: #5E5A52; }
+.pc-badge.pc-placeholder { background: #FFFFFF; border: 1px dashed #8A8578; color: #5E5A52; }
+.pc-tradeoff.pc-placeholder { border: 1px dashed #C9C5BB; border-radius: 8px; padding: 6px 8px; }
 """
 
 NAV_LEFT_HTML = """

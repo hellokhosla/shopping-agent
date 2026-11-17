@@ -81,22 +81,103 @@ def _card(row) -> str:
     )
     return (
         '<div class="pc-card">'
+        f"{_badge(row)}"
         f"{photo}"
         '<div class="pc-body">'
         f'<a class="pc-title" href="{url}" target="_blank" rel="noopener">{title}</a>'
         f'<div class="pc-price"><span class="pc-now">{price}</span>{was}</div>'
         f"{why}"
+        f"{_tradeoff(row)}"
+        '<div class="pc-actions">'
         f'<a class="pc-link" href="{url}" target="_blank" rel="noopener">View product</a>'
+        # Add to cart is display-only for now: no click handler and no cart state.
+        '<button type="button" class="pc-cart">Add to cart</button>'
+        "</div>"
         "</div></div>"
     )
 
 
-def format_rows(rows) -> str:
-    """Catalog rows -> a grid of product cards (one HTML block, no blank lines)."""
+# --------------------------------------------------------------------------
+# PLACEHOLDERS — TO BE LINKED TO MIDDLE (Kapil, Kavya) WHEN READY
+#
+# Badges, trade-offs and the near-miss strip need judgments the frontend can't
+# make from a catalog row. Until middle/ supplies them, the UI shows clearly
+# marked placeholder text so the layout can be reviewed.
+#
+# The contract this file already honors, so middle/ can plug in without any
+# frontend change:
+#   - badge:     optional "badge" column on the rows, e.g. "Best match"
+#   - trade-off: optional "tradeoff" column on the rows, e.g. "$24 more than the Hue"
+#   - near miss: optional near_miss argument to format_rows(), a dict with
+#                "title", "product_url" and "reason" (what it gives up)
+#
+# Set SHOW_PLACEHOLDERS = False to hide all three until real values arrive.
+# --------------------------------------------------------------------------
+SHOW_PLACEHOLDERS = True
+
+PLACEHOLDER_BADGE = "Badge placeholder"
+PLACEHOLDER_TRADEOFF = "placeholder, to come from the middle layer."
+PLACEHOLDER_NEAR_MISS = (
+    "Placeholder. A product that almost fits, and what it gives up, will appear here "
+    "once the middle layer supplies it."
+)
+
+
+def _text(value) -> str:
+    """A cell value as display text; missing values (None, NaN, '') become ''."""
+    if value is None or value != value:  # NaN is the only value not equal to itself
+        return ""
+    return str(value).strip()
+
+
+def _badge(row) -> str:
+    # TODO(middle): replace the placeholder by adding a "badge" column to the rows.
+    badge = _text(row.get("badge"))
+    if badge:
+        return f'<span class="pc-badge">{html.escape(badge)}</span>'
+    if SHOW_PLACEHOLDERS:
+        return f'<span class="pc-badge pc-placeholder">{PLACEHOLDER_BADGE}</span>'
+    return ""
+
+
+def _tradeoff(row) -> str:
+    # TODO(middle): replace the placeholder by adding a "tradeoff" column to the rows.
+    tradeoff = _text(row.get("tradeoff"))
+    if tradeoff:
+        return f'<div class="pc-tradeoff"><span class="pc-why-label">Trade-off:</span> {html.escape(tradeoff)}</div>'
+    if SHOW_PLACEHOLDERS:
+        return (
+            '<div class="pc-tradeoff pc-placeholder">'
+            f'<span class="pc-why-label">Trade-off:</span> {PLACEHOLDER_TRADEOFF}</div>'
+        )
+    return ""
+
+
+def _near_miss(near_miss) -> str:
+    # TODO(middle): replace the placeholder by passing near_miss= to format_rows().
+    if near_miss:
+        title = html.escape(_text(near_miss.get("title")))
+        url = html.escape(_text(near_miss.get("product_url")), quote=True)
+        reason = html.escape(_text(near_miss.get("reason")))
+        name = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>' if url else title
+        return f'<div class="pc-nearmiss"><span class="pc-nearmiss-tag">Near miss</span><span>{name} {reason}</span></div>'
+    if SHOW_PLACEHOLDERS:
+        return (
+            '<div class="pc-nearmiss pc-placeholder">'
+            f'<span class="pc-nearmiss-tag">Near miss</span><span>{PLACEHOLDER_NEAR_MISS}</span></div>'
+        )
+    return ""
+
+
+def format_rows(rows, near_miss=None) -> str:
+    """Catalog rows -> a grid of product cards (one HTML block, no blank lines).
+
+    near_miss is optional and not passed by app.py yet; see the PLACEHOLDERS note above.
+    """
     if rows is None or len(rows) == 0:
         return NO_RESULTS
     cards = "".join(_card(row) for _, row in rows.iterrows())
-    return f'<div class="pc-grid">{cards}</div>'
+    return f'<div class="pc-results"><div class="pc-grid">{cards}</div>{_near_miss(near_miss)}</div>'
 
 
 def build_demo(search_handler) -> gr.Blocks:
