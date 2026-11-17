@@ -23,6 +23,10 @@ Reads the same local CALPAK CSV, filters available variants, and deduplicates pa
 Checks connectivity to the existing shared Neon database and prints catalog counts and a few product variants.  
 Uses read-only transactions and a local `DATABASE_URL`; no AI, schema changes, or data loading is involved.
 
+**`backend/database_config.py`**  
+Loads nonempty environment-file values for the client and loader without overriding process settings.  
+An empty `DATABASE_URL` in the checked-in `.env.local` template does not mask credentials in the ignored `.env`.
+
 **`backend/colors.py`**  
 Converts Nordstrom's numeric color codes and CALPAK's named variant colors into shared color families and shades.  
 This lets the agent and viewer display and filter colors consistently across retailers.
@@ -110,7 +114,8 @@ they do not call an LLM. No other shopping-agent modules are required by the bac
 
 `neon init` creates a local `.env.local` with `DATABASE_URL` and `DATABASE_URL_UNPOOLED`; the loader prefers the
 unpooled URL for bulk loading. A workspace `.env` or process-level `DATABASE_URL` is also supported. These local
-environment files are ignored by `.gitignore`; never paste connection URLs into source code or chat. From the
+credentials must never be committed. The PR includes only a blank `.env.local` template; keep real URLs in the
+ignored `.env` file or process environment. From the
 project root, preview the enriched row counts or load both retailers:
 
 ```powershell
@@ -132,8 +137,9 @@ dimensions/airline limits, generate reviews, or create embeddings; those tables/
 
 ## Testing the shared Neon database
 
-Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in the project-root
-`.env` or `.env.local` file, using `backend/.env.example` as a template. Never commit a real connection URL.
+Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in the ignored
+project-root `.env` file, using `backend/.env.example` as a template, or set it in the process environment.
+The checked-in `.env.local` contains only `DATABASE_URL=`; leave that template empty. Never commit a real URL.
 The client uses the existing database directly; do not run the loader just to test connectivity.
 
 ```powershell

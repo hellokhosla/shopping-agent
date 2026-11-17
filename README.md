@@ -51,6 +51,7 @@ pip install -r requirements.txt
 python -m backend.database_test_client --retailer calpak --limit 5
 ```
 
-Use the connection string from the Neon Console and keep it in your local `.env` or `.env.local` file.
-Never commit or paste the real URL into source code, `.env.example`, or chat; both local environment files
-are ignored by Git. The client uses read-only transactions; it does not reload or change the shared database.
+Use the connection string from the Neon Console and keep it in your ignored `.env` file or process environment.
+The tracked `.env.local` is only a blank `DATABASE_URL=` template; leave it empty. Blank template values do not
+mask credentials from `.env`. Never commit or paste a real URL into source code, `.env.local`, `.env.example`,
+or chat. The client uses read-only transactions; it does not reload or change the shared database.

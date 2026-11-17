@@ -17,6 +17,7 @@ from retail_agent.config import RetailerConfig, load_retailer
 from retail_agent.models import Product
 
 from .catalog import build_products
+from .database_config import load_nonempty_dotenv
 
 CAPSTONE_ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
@@ -889,7 +890,7 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     import os
 
-    from dotenv import find_dotenv, load_dotenv
+    from dotenv import find_dotenv
 
     parser = argparse.ArgumentParser(
         description="Synthesize the configured demo catalog data and load both retailers into PostgreSQL."
@@ -926,10 +927,10 @@ def main(argv: list[str] | None = None) -> int:
 
     app_env = CAPSTONE_ROOT / ".env.local"
     if app_env.is_file():
-        load_dotenv(app_env, override=False)
+        load_nonempty_dotenv(app_env)
     fallback_env = find_dotenv(usecwd=True)
     if fallback_env:
-        load_dotenv(fallback_env, override=False)
+        load_nonempty_dotenv(fallback_env)
     database_url = os.environ.get("DATABASE_URL_UNPOOLED") or os.environ.get("DATABASE_URL")
     if not database_url:
         raise RuntimeError(
