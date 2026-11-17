@@ -27,12 +27,14 @@ def main() -> int:
     parser.add_argument("--limit", type=_positive_limit, default=5)
     args = parser.parse_args()
 
+    load_dotenv(REPOSITORY_ROOT / ".env.local")
     load_dotenv(REPOSITORY_ROOT / ".env")
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        parser.error("DATABASE_URL is not set; add it to the repository-root .env file.")
+        parser.error("DATABASE_URL is not set; add it to the repository-root .env or .env.local file.")
 
     with psycopg.connect(database_url, connect_timeout=10) as connection:
+        connection.read_only = True
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -42,7 +44,10 @@ def main() -> int:
                        (SELECT count(*) FROM variants)
                 """
             )
-            database_name, retailer_count, product_count, variant_count = cursor.fetchone()
+            summary = cursor.fetchone()
+            if summary is None:
+                raise RuntimeError("The database did not return a catalog summary.")
+            database_name, retailer_count, product_count, variant_count = summary
             print(
                 f"Connected to database {database_name!r}: "
                 f"{retailer_count} retailers, {product_count} active products, "
@@ -55,7 +60,7 @@ def main() -> int:
                 FROM products AS p
                 JOIN variants AS v USING (product_id, retailer_id)
                 WHERE p.retailer_id = %s AND p.is_active
-                ORDER BY p.title, v.price
+                ORDER BY p.title, v.price, v.variant_id
                 LIMIT %s
                 """,
                 (args.retailer, args.limit),

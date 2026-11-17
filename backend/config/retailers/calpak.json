@@ -1,0 +1,69 @@
+{
+  "retailer_id": "calpak",
+  "display_name": "CALPAK",
+  "category_pack": "travel",
+  "brand_voice": "Friendly, practical and concise. Focus on useful travel details without hype.",
+  "llm": {"model": "gpt-4.1-mini", "temperature": 0},
+  "catalog": {
+    "path": "..\\..\\data\\calpak_catalog_variants.csv",
+    "field_mapping": {
+      "sku": "sku",
+      "name": "title",
+      "brand": "vendor",
+      "price": "price",
+      "was_price": "compare_at_price",
+      "color_code": "option1_value",
+      "category": "product_type",
+      "tag": "tags",
+      "available": "available",
+      "description": "description_text"
+    },
+    "brand_override": "CALPAK",
+    "tag_separator": "|",
+    "stock_mode": "source_availability",
+    "drop_categories": ["", "Gift Cards"],
+    "max_valid_price": 10000,
+    "color_lookup": "calpak_color_names",
+    "size_system_by_category": {
+      "Mini Carry-On Luggage": "luggage",
+      "Carry-On Luggage": "luggage",
+      "Medium Luggage": "luggage",
+      "Large Luggage": "luggage"
+    },
+    "size_value_by_category": {
+      "Mini Carry-On Luggage": "mini carry-on",
+      "Carry-On Luggage": "carry-on/cabin",
+      "Medium Luggage": "medium check-in",
+      "Large Luggage": "large check-in"
+    }
+  },
+  "category_tags": {
+    "luggage": ["Carry-On Luggage", "Mini Carry-On Luggage", "Medium Luggage", "Large Luggage", "Luggage Sets"],
+    "carry-on luggage": ["Carry-On Luggage"],
+    "mini carry-on luggage": ["Mini Carry-On Luggage"],
+    "large luggage": ["Large Luggage"],
+    "medium luggage": ["Medium Luggage"],
+    "luggage set": ["Luggage Sets"],
+    "backpack": ["Backpack"],
+    "duffel bag": ["Duffel"],
+    "crossbody bag": ["Crossbodies & Belt Bags"],
+    "tote bag": ["Tote"],
+    "diaper bag": ["Diaper Bags"],
+    "insulated bag": ["Insulated Bags"],
+    "packing cubes": ["Packing Cubes"],
+    "toiletry bag": ["Toiletry, Makeup & Jewelry Bags"],
+    "organizer": ["Organizers & Laptop Sleeves"],
+    "wallet or pouch": ["Wallets & Pouches"],
+    "travel accessory": ["Travel Accessories", "Personalization Accessories", "CALPAK Merchandise"]
+  },
+  "merchandising": {"boosts": []},
+  "guardrails": {
+    "help_page_url": "https://www.calpaktravel.com/pages/contact-us",
+    "catalog_scope": "CALPAK's catalog of luggage, travel bags, packing organizers and travel accessories.",
+    "competitors": ["away", "monos", "beis", "béis", "samsonite", "travelpro", "briggs & riley"],
+    "out_of_catalog_terms": [
+      "dress", "heels", "men's clothing", "menswear", "tent", "sleeping bag", "camping stove",
+      "furniture", "electronics", "return policy", "shipping policy"
+    ]
+  }
+}
