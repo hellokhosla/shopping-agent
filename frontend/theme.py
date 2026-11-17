@@ -68,13 +68,14 @@ footer { display: none !important; }
 }
 #hero-ask-label { margin-top: 10px; font-size: 14px; font-weight: 500; color: #F3E3E5; }
 #hero-ask { max-width: 540px; margin-top: 8px; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+#hero-ask .input-container { display: flex; align-items: center; gap: 16px; }
 #hero-ask textarea, #hero-ask input {
     border-radius: 999px !important; border: 0 !important; background: #FFFDF6 !important;
-    padding: 16px 64px 16px 22px !important; font-size: 16px !important; color: #1A1A1A !important;
+    padding: 16px 22px !important; font-size: 16px !important; color: #1A1A1A !important;
 }
 #hero-ask button {
-    background: #F5EE7A !important; color: #1A1A1A !important; border-radius: 999px !important;
-    min-width: 46px !important; height: 46px !important; right: 6px !important;
+    position: static !important; flex: 0 0 52px; background: #F5EE7A !important; color: #1A1A1A !important;
+    border-radius: 999px !important; width: 52px !important; min-width: 52px !important; height: 52px !important;
 }
 #hero-art {
     flex: 1 1 480px !important; min-height: 420px; background: #6E1B29;

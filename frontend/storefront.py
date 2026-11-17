@@ -26,7 +26,7 @@ RIBBON_HTML = """
 <div id="demo-ribbon">
   <span class="demo-pill demo-pill-dark">DEMO</span>
   <span>Course project storefront. Not affiliated with or endorsed by CALPAK.
-  Prices and stock are from a 15 Nov 2026 catalog snapshot; nothing here can be bought.</span>
+  Prices and stock are from a 15 Nov 2026 catalog snapshot.</span>
 </div>
 """
 
