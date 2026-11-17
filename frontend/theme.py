@@ -53,9 +53,9 @@ footer { display: none !important; }
     padding: 9px 18px !important; font-size: 15px !important; background: #FFFFFF !important;
 }
 
-/* Banner: dusty rose, a lighter maroon, so the maroon launcher pill stands out. */
+/* Banner: pale rose, a lighter maroon, so the maroon launcher pill stands out. */
 #hero {
-    margin-top: 16px; background: #A8707A; border-radius: 14px; overflow: hidden;
+    margin-top: 16px; background: #C99AA2; border-radius: 14px; overflow: hidden;
     flex-wrap: wrap; gap: 0 !important; align-items: stretch;
 }
 #hero-copy { flex: 1 1 520px !important; padding: 56px 52px !important; gap: 0 !important; justify-content: center; }
@@ -79,7 +79,7 @@ footer { display: none !important; }
     border-radius: 999px !important; width: 52px !important; min-width: 52px !important; height: 52px !important;
 }
 #hero-art {
-    flex: 1 1 480px !important; min-height: 420px; background: #B37E87;
+    flex: 1 1 480px !important; min-height: 420px; background: #D2A9B0;
     display: flex; align-items: flex-end; justify-content: center; padding: 40px 24px 0 24px;
 }
 #hero-art-inner { display: flex; align-items: flex-end; justify-content: center; width: 100%; }
