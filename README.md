@@ -34,3 +34,18 @@ python app.py
 ## Data
 
 `data/calpak_catalog_variants.csv` — real Calpak Shopify product/variant export (178 in-stock products after filtering). Nordstrom dataset (shared separately in Slack, ~48MB) isn't included here yet — add it as a second catalog source if the demo needs multi-retailer support.
+
+## Checking Neon database connectivity
+
+`backend/neon_client.py` is a read-only sample client. It checks the connection, prints database row counts, and
+queries a few product variants without changing data:
+
+```bash
+cp .env.example .env
+# Set DATABASE_URL in .env to the shared Neon PostgreSQL connection string.
+pip install -r requirements.txt
+python -m backend.neon_client --retailer calpak --limit 5
+```
+
+Use the connection string from the Neon Console and keep it in your local `.env` file. Never commit or paste the
+real URL into source code, `.env.example`, or chat; `.env` is ignored by Git.

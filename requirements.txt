@@ -6,3 +6,4 @@ arize==8.46.0
 anthropic==0.116.0
 pandas==2.3.3
 python-dotenv==1.2.1
+psycopg[binary]>=3.2,<4
