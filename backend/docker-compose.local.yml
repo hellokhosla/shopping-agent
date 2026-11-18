@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: retail_local
+      POSTGRES_DB: retail_catalog
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run the local setup script to create backend/.env.docker}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - retail_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retail_local -d retail_catalog"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - retail_ollama_data:/root/.ollama
+
+volumes:
+  retail_postgres_data:
+  retail_ollama_data:

@@ -4,10 +4,51 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from backend.database_config import load_database_environment
+from psycopg.conninfo import conninfo_to_dict
+
+from backend.database_config import catalog_conninfo, load_database_environment
 
 
 class DatabaseConfigTests(unittest.TestCase):
+    def test_local_target_uses_docker_settings_even_with_cloud_url_in_environment(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DATABASE_URL": "cloud-value", "PGHOSTADDR": "192.0.2.1"}, clear=True
+        ):
+            root = Path(directory)
+            (root / "database_target.json").write_text('{"target":"local"}', encoding="utf-8")
+            (root / ".env.docker").write_text(
+                "POSTGRES_PASSWORD='test@local/password'\nPOSTGRES_PORT=55433\n", encoding="utf-8"
+            )
+            with patch("backend.database_config.__file__", str(root / "database_config.py")):
+                options = conninfo_to_dict(catalog_conninfo())
+            self.assertEqual(options["hostaddr"], "127.0.0.1")
+            self.assertEqual(options["port"], "55433")
+            self.assertEqual(options["dbname"], "retail_catalog")
+            self.assertEqual(options["password"], "test@local/password")
+            self.assertEqual(os.environ["DATABASE_URL"], "cloud-value")
+
+    def test_neon_target_preserves_existing_database_configuration(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {}, clear=True):
+            root = Path(directory)
+            (root / "database_target.json").write_text('{"target":"neon"}', encoding="utf-8")
+            (root / ".env.local").write_text("DATABASE_URL=neon-value\n", encoding="utf-8")
+            with patch("backend.database_config.__file__", str(root / "database_config.py")):
+                self.assertEqual(catalog_conninfo(), "neon-value")
+
+    def test_invalid_or_unconfigured_local_target_never_falls_back_to_neon(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DATABASE_URL": "cloud-value"}, clear=True
+        ):
+            root = Path(directory)
+            config = root / "database_target.json"
+            with patch("backend.database_config.__file__", str(root / "database_config.py")):
+                config.write_text('{"target":"typo"}', encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, 'Set "target"'):
+                    catalog_conninfo()
+                config.write_text('{"target":"local"}', encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, "POSTGRES_PASSWORD"):
+                    catalog_conninfo()
+
     def test_reads_backend_file_without_loading_project_root_files(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {}, clear=True):
             root = Path(directory)

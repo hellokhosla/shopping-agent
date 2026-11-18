@@ -76,7 +76,7 @@ def _facets(retailer_id: str) -> dict[str, list[str]]:
 
 
 def default_chat_model(retailer_id: str) -> ChatModel:
-    from langchain_openai import ChatModel
+    from langchain_openai import ChatOpenAI
 
     load_dotenv(BACKEND_DIR / ".env")
     llm = load_retailer_config(retailer_id).llm

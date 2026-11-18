@@ -18,7 +18,6 @@ one retailer. Semantic search (11.3) is wired in but optional: pass `query_vecto
 from __future__ import annotations
 
 import math
-import os
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from decimal import Decimal
@@ -29,7 +28,7 @@ from psycopg.rows import dict_row
 from pydantic import BaseModel, Field, field_validator
 
 from .colors import normalize_color_word
-from .database_config import load_database_environment
+from .database_config import catalog_conninfo
 
 NEAR_MISS_THRESHOLD = 3
 NEAR_MISS_PRICE_TOLERANCE = 0.10
@@ -152,12 +151,8 @@ class CarryOnFit(BaseModel):
 
 @contextmanager
 def connect() -> Iterator[psycopg.Connection]:
-    """Read-only connection using DATABASE_URL (process env first, then backend/.env.local)."""
-    load_database_environment()
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise RuntimeError("DATABASE_URL is not set; configure it in backend/.env.local.")
-    with psycopg.connect(url, connect_timeout=10, row_factory=dict_row) as conn:
+    """Open a read-only connection to the selected catalog database."""
+    with psycopg.connect(catalog_conninfo(), connect_timeout=10, row_factory=dict_row) as conn:
         conn.read_only = True
         yield conn
 

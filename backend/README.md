@@ -159,6 +159,64 @@ The loader deterministically synthesizes only the Nordstrom size/stock already p
 those fields as synthetic. CALPAK availability stays source-backed. It does not call an LLM, invent luggage
 dimensions/airline limits, generate reviews, or create embeddings; those tables/columns remain ready for later steps.
 
+## Local Docker PostgreSQL and vector embeddings
+
+For teammate onboarding after merge, see the [local PostgreSQL setup guide](./local_postgresql_database_setup.md).
+
+This optional setup runs PostgreSQL 16 with pgvector and Ollama locally. It uses the same migration and catalog
+loader as the shared database, but passes the local connection URL directly and never reads or changes
+`backend/.env.local`. Install and start Docker Desktop before running setup. The script downloads the images,
+creates an isolated Python environment, and downloads the embedding model.
+
+From the project root, run:
+
+```powershell
+python backend\setup_local_database.py setup
+```
+
+On macOS, run `python3 backend/setup_local_database.py setup`. Setup creates the local-only `backend/.env.docker`,
+starts containers bound to localhost, loads both retailer catalogs, and generates 1,024-dimensional vectors with
+Ollama's `bge-large` model. The backfill commits in batches and can resume after interruption. Allow several
+gigabytes for the images, model, database, and index; full-catalog CPU embedding can take many hours.
+
+If Ollama reports `x509: certificate signed by unknown authority` on a corporate network, obtain your
+organization's approved proxy CA as a PEM `.crt` file and add it to the Ollama container's trust store:
+
+```powershell
+docker compose --env-file backend/.env.docker -f backend/docker-compose.local.yml cp path-to-approved-ca.crt ollama:/usr/local/share/ca-certificates/retail-proxy.crt
+docker compose --env-file backend/.env.docker -f backend/docker-compose.local.yml exec -T -u 0 ollama update-ca-certificates
+docker compose --env-file backend/.env.docker -f backend/docker-compose.local.yml restart ollama
+```
+
+Rerun `setup` with TLS verification enabled. The model is cached in a Docker volume, so subsequent runs don't
+contact the model registry if it is already present. If the container is recreated and a fresh model download is
+needed, reapply the approved CA to the new container.
+
+Useful follow-up commands:
+
+```powershell
+python backend\setup_local_database.py status
+python backend\setup_local_database.py embed --batch-size 8
+python backend\setup_local_database.py stop
+```
+
+`stop` retains the PostgreSQL data and downloaded model. `embed --reembed` replaces all active-product vectors
+in the local database only. PostgreSQL defaults to port `55432` and Ollama to `11434`; both bind to `127.0.0.1`.
+Removing the Compose volumes deletes the local catalog and model cache.
+
+## Choosing the agent's catalog database
+
+[`database_target.json`](./database_target.json) controls the database used by the agent's catalog queries.
+It defaults to `{"target": "local"}`, which connects to Docker PostgreSQL at `127.0.0.1:55432`.
+Run the local Docker setup and use its generated `.env.docker` next to this README. If Docker was set up from a
+different checkout on the same machine, copy only that generated file into this checkout's `backend` folder.
+The file is git-ignored; it supplies `POSTGRES_PASSWORD` and an optional `POSTGRES_PORT`.
+
+To use the shared database, set the target to `neon` and configure `DATABASE_URL` in the environment or
+in `backend/.env.local`. A local connection failure does not fall back to Neon. This switch applies to the agent
+and catalog search, not the database loader or the shared-database test client. It does not change the LLM
+provider or enable vector ranking.
+
 ## Testing the shared Neon database
 
 Ask the database owner for the connection URL through a secure channel. Put `DATABASE_URL` in
@@ -181,8 +239,8 @@ role when sharing access; a retailer query filter is not a database permission b
 
 ```powershell
 python -m unittest discover -s backend\tests -t .
-$env:RUN_DB_TESTS = "1"; python -m unittest backend.tests.test_catalog_search   # read-only queries against Neon
-$env:RUN_LLM_TESTS = "1"; python -m unittest backend.tests.test_agent_graph -v   # real prompts via OpenAI + Neon
+$env:RUN_DB_TESTS = "1"; python -m unittest backend.tests.test_catalog_search   # read-only queries against selected DB
+$env:RUN_LLM_TESTS = "1"; python -m unittest backend.tests.test_agent_graph -v   # real prompts via OpenAI + selected DB
 python -m backend.viewer --help
 python -m backend.viewer
 ```
