@@ -5,7 +5,7 @@
   "brand_voice": "Warm, polished and concise, like a helpful personal stylist. No hype, no emojis.",
   "llm": {"model": "gpt-4.1-mini", "temperature": 0},
   "catalog": {
-    "path": "..\\..\\data\\nordstrom product data.csv",
+    "path": "../../data/nordstrom product data.csv",
     "field_mapping": {
       "sku": "SKU",
       "name": "PRODUCT_NAME",

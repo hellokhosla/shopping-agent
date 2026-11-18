@@ -48,6 +48,19 @@ Runs the same catalog enrichment used by the viewer, maps parent products and bu
 It reads the Nordstrom and CALPAK CSVs using their retailer configs and reuses `backend/catalog.py`; this is project-specific code, not a copied third-party loader.  
 Its database mapping follows `backend/data/database.md`, based on PRD v2 and `plan.md`; synthetic Nordstrom size/stock is flagged and CALPAK availability remains source-backed.
 
+**`backend/catalog_search.py`**  
+Read-only query functions for the agent's search nodes, following `backend/data/database.md` section 11: `search_catalog`
+(filters + keyword ranking + near misses), `exact_search`, `keyword_search`, `near_miss_search`, `carry_on_fit`,
+`get_products`, `catalog_facets`, `suggest_brands`. The LLM fills a `SearchRequest`; results are pydantic models.
+Semantic ranking is optional (`query_vector=`) until embeddings are populated.
+
+**`backend/agent_graph.py`** and **`backend/skills/comparison_writeup.md`**  
+LangGraph search-and-compare flow: the LLM turns the shopper prompt into a `SearchRequest` (structured output),
+`search_catalog` runs it, and the comparison write-up skill picks and compares 2-4 results. Picks whose IDs are not
+in the search results are dropped. Model and temperature come from the retailer config (`llm`); put
+`OPENAI_API_KEY` in `backend/.env` (git-ignored), never in the tracked `backend/.env.local`.
+Try it: `python -m backend.agent_graph "Navy blazer under $150 in size M" --retailer nordstrom`.
+
 **`backend/migrations/001_initial_schema.sql`**  
 Creates the PostgreSQL 16 schema, pgvector/pg_trgm extensions, search indexes, and retailer-isolation constraints.  
 The loader tracks migration checksums so applied migrations are not silently changed.
@@ -168,6 +181,8 @@ role when sharing access; a retailer query filter is not a database permission b
 
 ```powershell
 python -m unittest discover -s backend\tests -t .
+$env:RUN_DB_TESTS = "1"; python -m unittest backend.tests.test_catalog_search   # read-only queries against Neon
+$env:RUN_LLM_TESTS = "1"; python -m unittest backend.tests.test_agent_graph -v   # real prompts via OpenAI + Neon
 python -m backend.viewer --help
 python -m backend.viewer
 ```

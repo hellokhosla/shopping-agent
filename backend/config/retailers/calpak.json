@@ -5,7 +5,7 @@
   "brand_voice": "Friendly, practical and concise. Focus on useful travel details without hype.",
   "llm": {"model": "gpt-4.1-mini", "temperature": 0},
   "catalog": {
-    "path": "..\\..\\data\\calpak_catalog_variants.csv",
+    "path": "../../data/calpak_catalog_variants.csv",
     "field_mapping": {
       "sku": "sku",
       "name": "title",
