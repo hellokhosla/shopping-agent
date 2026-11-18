@@ -161,6 +161,8 @@ dimensions/airline limits, generate reviews, or create embeddings; those tables/
 
 ## Local Docker PostgreSQL and vector embeddings
 
+For teammate onboarding after merge, see the [local PostgreSQL setup guide](./local_postgresql_database_setup.md).
+
 This optional setup runs PostgreSQL 16 with pgvector and Ollama locally. It uses the same migration and catalog
 loader as the shared database, but passes the local connection URL directly and never reads or changes
 `backend/.env.local`. Install and start Docker Desktop before running setup. The script downloads the images,
