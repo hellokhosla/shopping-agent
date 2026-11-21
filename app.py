@@ -1,45 +1,49 @@
-"""OWNER: Everyone — this is the integration seam, not any one area's code.
-
-V0 (Workflow): classify -> dispatch -> search -> format.
-
-Code is the center of control. The model is called exactly once per message,
-only to classify intent and extract constraints; every step after that is
-plain Python running the same way every time.
-
-Wires the three team areas together without any of them importing each other:
-  backend/   (Gaurav, Prasad)  -> load_catalog()
-  middle/    (Kapil, Kavya)    -> classify(), DISPATCH, clamp_price()
-  frontend/  (Jasmeet, Carly)  -> format_rows(), build_demo()
-"""
+"""Connect the CALPAK storefront to the backend search-and-compare workflow."""
 
 from __future__ import annotations
 
-from dotenv import load_dotenv
+import html
 
-load_dotenv()
+import pandas as pd
 
-from backend.catalog import load_catalog
+from backend.agent_graph import run
 from frontend.theme import CALPAK_CSS, CALPAK_THEME
 from frontend.ui import build_demo, format_rows
-from middle.classify import classify
-from middle.dispatch import DISPATCH
-from middle.guardrails import clamp_price
 
 
 def respond(message: str) -> str:
-    intent = classify(message)
-    intent.max_price = clamp_price(intent.max_price)
-
-    catalog = load_catalog()
-    handler = DISPATCH[intent.objective]
-    rows = handler(catalog, intent)
-
-    answer = format_rows(rows)
-    debug = f"\n\n<sub>_intent: {intent.objective} · category={intent.category} · brand={intent.brand} · max_price={intent.max_price}_</sub>"
-    return answer + debug
+    state = run(message, retailer_id="calpak")
+    result = state["result"]
+    comparison = state["comparison"]
+    summary = f'<div class="pc-summary">{html.escape(comparison.summary)}</div>'
+    hits = {hit.product_id: hit for hit in [*result.hits, *result.near_misses]}
+    rows = []
+    for pick in comparison.picks:
+        hit = hits.get(pick.product_id)
+        if hit is None or not hit.variants:
+            continue
+        variant = hit.variants[0]
+        tradeoff = pick.trade_off
+        if hit.is_near_miss:
+            tradeoff = "; ".join([*hit.miss_reasons, tradeoff])
+        rows.append({
+            "title": hit.title,
+            "product_url": hit.product_url,
+            "image_url": variant.image_url or hit.image_url,
+            "price": variant.price,
+            "compare_at_price": variant.was_price,
+            "why": pick.why,
+            "tradeoff": tradeoff,
+            "badge": "Near miss" if hit.is_near_miss else "",
+        })
+    if not rows:
+        if result.hits or result.near_misses:
+            return summary + '<div class="pc-empty">No verified product picks were returned.</div>'
+        return summary
+    return summary + format_rows(pd.DataFrame(rows))
 
 
 demo = build_demo(respond)
 
 if __name__ == "__main__":
-    demo.launch(theme=CALPAK_THEME, css=CALPAK_CSS, share=True)
+    demo.launch(theme=CALPAK_THEME, css=CALPAK_CSS)
