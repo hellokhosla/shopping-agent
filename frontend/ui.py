@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import html
 import re
+from urllib.parse import urlsplit
 
 import gradio as gr
 
@@ -41,17 +42,16 @@ FORCE_LIGHT_MODE_JS = """
 }
 """
 
-# After an answer lands, put the shopper's latest question at the top of the
-# message area, so a tall grid of cards is read from its first row, not its last.
-SCROLL_TO_LATEST_QUESTION_JS = """
+# Show the start of the latest answer, even when its cards exceed the chat height.
+SCROLL_TO_LATEST_ANSWER_JS = """
 () => {
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#chat-messages .user-row');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const rows = document.querySelectorAll('#chat-messages .bot-row');
     const scroller = document.querySelector('#chat-messages .bubble-wrap');
     if (!rows.length || !scroller) return;
     const last = rows[rows.length - 1];
     scroller.scrollTop += last.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 8;
-  }, 150);
+  }));
 }
 """
 
@@ -75,58 +75,62 @@ def _thumbnail(image_url) -> str:
 
 def _card(row) -> str:
     title = html.escape(str(row["title"]))
-    url = html.escape(str(row["product_url"]), quote=True)
+    raw_url = _text(row.get("product_url"))
+    url = html.escape(raw_url, quote=True) if urlsplit(raw_url).scheme in ("http", "https") else ""
     price = f"${row['price']:.2f}"
     compare = row.get("compare_at_price")
     was = f'<span class="pc-was">${compare:.2f}</span>' if compare and compare > row["price"] else ""
     image = _thumbnail(row.get("image_url"))
+    image = image if urlsplit(image).scheme in ("http", "https") else ""
     photo = (
         f'<a class="pc-photo" href="{url}" target="_blank" rel="noopener">'
         f'<img src="{html.escape(image, quote=True)}" alt="{title}" loading="lazy"></a>'
-        if image
+        if image and url
         else ""
     )
-    best_for = _best_for(row.get("description_text"))
+    best_for = _text(row.get("why")) or _best_for(row.get("description_text"))
     why = (
         f'<div class="pc-why"><span class="pc-why-label">Best for</span> {html.escape(best_for)}</div>'
         if best_for
         else ""
+    )
+    product_title = (
+        f'<a class="pc-title" href="{url}" target="_blank" rel="noopener">{title}</a>'
+        if url else f'<span class="pc-title">{title}</span>'
+    )
+    actions = (
+        f'<div class="pc-actions"><a class="pc-link" href="{url}" target="_blank" rel="noopener">View product</a></div>'
+        if url else ""
     )
     return (
         '<div class="pc-card">'
         f"{_badge(row)}"
         f"{photo}"
         '<div class="pc-body">'
-        f'<a class="pc-title" href="{url}" target="_blank" rel="noopener">{title}</a>'
+        f"{product_title}"
         f'<div class="pc-price"><span class="pc-now">{price}</span>{was}</div>'
         f"{why}"
         f"{_tradeoff(row)}"
-        '<div class="pc-actions">'
-        f'<a class="pc-link" href="{url}" target="_blank" rel="noopener">View product</a>'
-        # Add to cart is display-only for now: no click handler and no cart state.
-        '<button type="button" class="pc-cart">Add to cart</button>'
-        "</div>"
+        f"{actions}"
         "</div></div>"
     )
 
 
 # --------------------------------------------------------------------------
-# PLACEHOLDERS — TO BE LINKED TO MIDDLE (Kapil, Kavya) WHEN READY
+# OPTIONAL CARD FIELDS
 #
 # Badges, trade-offs and the near-miss strip need judgments the frontend can't
-# make from a catalog row. Until middle/ supplies them, the UI shows clearly
-# marked placeholder text so the layout can be reviewed.
+# make from a catalog row. The integration supplies near-miss badges and trade-offs.
 #
-# The contract this file already honors, so middle/ can plug in without any
-# frontend change:
+# The display contract:
 #   - badge:     optional "badge" column on the rows, e.g. "Best match"
 #   - trade-off: optional "tradeoff" column on the rows, e.g. "$24 more than the Hue"
 #   - near miss: optional near_miss argument to format_rows(), a dict with
 #                "title", "product_url" and "reason" (what it gives up)
 #
-# Set SHOW_PLACEHOLDERS = False to hide all three until real values arrive.
+# Placeholders are disabled for the integrated storefront.
 # --------------------------------------------------------------------------
-SHOW_PLACEHOLDERS = True
+SHOW_PLACEHOLDERS = False
 
 PLACEHOLDER_BADGE = "Badge placeholder"
 PLACEHOLDER_TRADEOFF = "placeholder, to come from the middle layer."
@@ -144,7 +148,6 @@ def _text(value) -> str:
 
 
 def _badge(row) -> str:
-    # TODO(middle): replace the placeholder by adding a "badge" column to the rows.
     badge = _text(row.get("badge"))
     if badge:
         return f'<span class="pc-badge">{html.escape(badge)}</span>'
@@ -154,7 +157,6 @@ def _badge(row) -> str:
 
 
 def _tradeoff(row) -> str:
-    # TODO(middle): replace the placeholder by adding a "tradeoff" column to the rows.
     tradeoff = _text(row.get("tradeoff"))
     if tradeoff:
         return f'<div class="pc-tradeoff"><span class="pc-why-label">Trade-off:</span> {html.escape(tradeoff)}</div>'
@@ -372,7 +374,7 @@ def build_demo(search_handler) -> gr.Blocks:
                 show_progress="hidden",
             ).then(
                 add_answer, inputs=[pending, chatbot], outputs=[chatbot, pending], show_progress="hidden"
-            ).then(None, None, None, js=SCROLL_TO_LATEST_QUESTION_JS)
+            ).then(None, None, None, js=SCROLL_TO_LATEST_ANSWER_JS)
 
     return demo
 

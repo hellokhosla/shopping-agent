@@ -103,8 +103,8 @@ PRODUCTS_HTML = (
 FOOTER_HTML = """
 <div id="sf-footer">
   <span class="sf-footer-title">About this demo</span>
-  <span>Team 12 retail shopping agent, V0 workflow. The model classifies intent once per
-  message; code does everything else: search, price limits and formatting. Product names,
-  photos and prices belong to CALPAK and are used here for a class demo only.</span>
+  <span>Team 12 retail shopping agent. The assistant searches the configured product catalog
+  and compares the results. Product names, photos and prices belong to CALPAK and are used
+  here for a class demo only.</span>
 </div>
 """
